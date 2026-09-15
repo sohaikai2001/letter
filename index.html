@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5eee8">
+<title>给宝的一封信 💌</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; width:100%; min-height:100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5eee8;
+    color:#5d514d;
+    overflow:hidden;
+  }
+
+  .scene {
+    min-height:100svh;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 38%, rgba(255,255,255,.9) 0 7%, rgba(255,255,255,0) 38%),
+      linear-gradient(160deg,#f7f0eb,#eee3dc);
+  }
+
+  .glow {
+    position:absolute;
+    width:70vw; height:70vw;
+    max-width:420px; max-height:420px;
+    border-radius:50%;
+    background:rgba(255,255,255,.32);
+    filter:blur(35px);
+    animation:breathe 5s ease-in-out infinite;
+  }
+  @keyframes breathe { 50% { transform:scale(1.08); opacity:.65; } }
+
+  .hint {
+    position:absolute;
+    top:calc(env(safe-area-inset-top) + 12vh);
+    width:100%;
+    text-align:center;
+    font-size:14px;
+    letter-spacing:2px;
+    color:#9a8981;
+    opacity:0;
+    animation:fadeIn 1.5s .5s forwards;
+  }
+
+  .envelope-wrap {
+    position:relative;
+    width:min(82vw,340px);
+    height:290px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    perspective:900px;
+    animation:float 4s ease-in-out infinite;
+    cursor:pointer;
+  }
+  @keyframes float {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-9px); }
+  }
+
+  .envelope {
+    position:relative;
+    width:100%;
+    aspect-ratio:1.55;
+    transform-style:preserve-3d;
+    filter:drop-shadow(0 18px 24px rgba(100,75,65,.14));
+  }
+
+  .back {
+    position:absolute; inset:0;
+    background:#dfbcb3;
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .back::after {
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.28),transparent 42%);
+  }
+
+  .letter {
+    position:absolute;
+    left:7%;
+    bottom:5%;
+    width:86%;
+    height:88%;
+    background:
+        linear-gradient(rgba(255,253,249,.72), rgba(255,253,249,.72)),
+        url("shinchan.webp");
+    background-size:cover;
+    background-position:center;
+    border-radius:4px;
+    box-shadow:0 5px 14px rgba(90,65,55,.12);
+    z-index:2;
+    padding:18px;
+    transition:transform 1.2s cubic-bezier(.2,.8,.2,1), opacity .8s;
+  }
+  .letter .mini { width:55%; height:5px; border-radius:10px; background:#eadbd4; margin:5px auto 13px; }
+  .letter .lines { display:grid; gap:8px; }
+  .letter .line { height:4px; border-radius:8px; background:#eee4de; }
+  .letter .line:nth-child(2){width:85%}.letter .line:nth-child(3){width:92%}.letter .line:nth-child(4){width:70%}
+
+  .front-left, .front-right {
+    position:absolute; bottom:0; width:50%; height:75%;
+    z-index:4; background:#e7c6bd;
+  }
+  .front-left { left:0; clip-path:polygon(0 0,100% 100%,0 100%); }
+  .front-right { right:0; clip-path:polygon(100% 0,100% 100%,0 100%); }
+
+  .flap {
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:62%;
+    background:#edcec6;
+    clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top center;
+    z-index:5;
+    transition:transform 1s cubic-bezier(.2,.8,.2,1);
+    backface-visibility:hidden;
+  }
+
+  .seal {
+    position:absolute;
+    z-index:7;
+    left:50%; top:50%;
+    transform:translate(-50%,-35%);
+    width:43px; height:43px;
+    border-radius:50%;
+    background:#c98f87;
+    color:#fff;
+    display:grid; place-items:center;
+    font-size:20px;
+    box-shadow:0 5px 10px rgba(100,65,60,.15);
+    transition:opacity .4s, transform .5s;
+  }
+
+  .tap {
+    position:absolute;
+    bottom:calc(env(safe-area-inset-bottom) + 10vh);
+    color:#9a8981;
+    font-size:13px;
+    letter-spacing:1.5px;
+    opacity:0;
+    animation:fadeIn 1.5s 1s forwards, pulse 2.5s 2s infinite;
+  }
+  @keyframes pulse { 50% { opacity:.45; } }
+  @keyframes fadeIn { to { opacity:1; } }
+
+  /* Open state */
+  .open .envelope-wrap { animation:none; }
+  .open .flap { transform:rotateX(180deg); }
+  .open .seal { opacity:0; transform:translate(-50%,-35%) scale(.5); }
+  .open .letter { transform:translateY(-175px); }
+
+  .message-screen {
+    position:absolute;
+    inset:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:30px 20px;
+    background:
+      radial-gradient(circle at 50% 25%,rgba(255,255,255,.85),transparent 35%),
+      linear-gradient(160deg,#f8f1ec,#eee4de);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 1.2s ease;
+  }
+  .message-screen.show { opacity:1; pointer-events:auto; }
+
+  .paper {
+    width:min(92vw,390px);
+    max-height:82svh;
+    overflow:auto;
+    padding:38px 27px 32px;
+    background:rgba(255,253,249,.94);
+    border-radius:5px;
+    box-shadow:0 20px 55px rgba(92,69,61,.14);
+    position:relative;
+    transform:translateY(35px) scale(.97);
+    transition:transform 1s cubic-bezier(.2,.8,.2,1);
+    scrollbar-width:none;
+  }
+  .paper::-webkit-scrollbar { display:none; }
+  .message-screen.show .paper { transform:translateY(0) scale(1); }
+
+  .paper::before {
+    content:"";
+    position:absolute;
+    left:0; right:0; top:0;
+    height:5px;
+    background:#d9aaa1;
+  }
+
+  .small-title {
+    text-align:center;
+    color:#b28b83;
+    font-size:12px;
+    letter-spacing:3px;
+    margin-bottom:14px;
+    opacity:0;
+  }
+  .paper h1 {
+    text-align:center;
+    font-size:22px;
+    font-weight:500;
+    color:#665753;
+    margin:0 0 28px;
+    opacity:0;
+  }
+  .message {
+    font-size:16px;
+    line-height:2.05;
+    letter-spacing:.4px;
+    color:#655955;
+    white-space:pre-line;
+    min-height:250px;
+  }
+  .signature {
+    text-align:right;
+    margin-top:26px;
+    color:#9b817b;
+    font-size:14px;
+    opacity:0;
+  }
+  .message-screen.show .small-title { animation:fadeUp .8s .45s forwards; }
+  .message-screen.show h1 { animation:fadeUp .8s .7s forwards; }
+  .message-screen.show .signature { animation:fadeUp .8s 3.2s forwards; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  .particle {
+    position:absolute;
+    width:4px; height:4px;
+    border-radius:50%;
+    background:rgba(255,255,255,.75);
+    animation:drift linear infinite;
+  }
+  @keyframes drift {
+    from { transform:translateY(105svh); opacity:0; }
+    15% { opacity:.8; }
+    85% { opacity:.5; }
+    to { transform:translateY(-10svh) translateX(35px); opacity:0; }
+  }
+
+  .back-btn {
+    display:block;
+    margin:26px auto 0;
+    border:0;
+    background:transparent;
+    color:#aa8b84;
+    font:inherit;
+    font-size:13px;
+    padding:8px 15px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+  <div class="glow"></div>
+  <div class="hint">有一封小小的信给你</div>
+
+  <div class="envelope-wrap" id="envelopeWrap" role="button" aria-label="打开信封" tabindex="0">
+    <div class="envelope">
+      <div class="back"></div>
+
+      <div class="letter" aria-hidden="true">
+        <div class="mini"></div>
+        <div class="lines">
+          <div class="line"></div><div class="line"></div>
+          <div class="line"></div><div class="line"></div>
+        </div>
+      </div>
+
+      <div class="front-left"></div>
+      <div class="front-right"></div>
+      <div class="flap"></div>
+      <div class="seal">♡</div>
+    </div>
+  </div>
+
+  <div class="tap">轻轻点一下</div>
+
+  <div class="message-screen" id="messageScreen">
+    <article class="paper">
+      <div class="small-title">A LITTLE LETTER FOR MY BABE</div>
+      <h1>给皇上的一封小小的信 💌</h1>
+      <div class="message" id="message"></div>
+      <div class="signature">希望宝早点好起来 🌷</div>
+      <button class="back-btn" id="backBtn">再看一次</button>
+    </article>
+  </div>
+</div>
+
+<script>
+const text = `希望宝可以早点好起来。
+
+这段时间就好好休息，不要想太多，
+先把自己的身体照顾好。
+
+等宝好起来以后，
+就可以看Leon爽爽够够力了。
+想吃什么就去吃什么，
+把现在没办法吃到的，
+之后一个一个补回来。
+
+所以现在要乖乖休息，
+慢慢来，不着急。
+
+希望你每天都能舒服一点，
+也希望下一次见面的时候，
+你已经恢复得好好的了。
+
+早点好起来。
+我等你一起去吃好吃的。`;
+
+const wrap = document.getElementById('envelopeWrap');
+const scene = document.getElementById('scene');
+const screen = document.getElementById('messageScreen');
+const message = document.getElementById('message');
+const backBtn = document.getElementById('backBtn');
+
+function typeText() {
+  message.textContent = "";
+  let i = 0;
+  function next() {
+    if (i < text.length) {
+      message.textContent += text[i++];
+      setTimeout(next, text[i-1] === '\n' ? 110 : 32);
+    }
+  }
+  next();
+}
+
+function openLetter() {
+  if (scene.classList.contains('open')) return;
+  scene.classList.add('open');
+
+  setTimeout(() => {
+    screen.classList.add('show');
+    typeText();
+  }, 1150);
+}
+
+function resetLetter() {
+  screen.classList.remove('show');
+  setTimeout(() => scene.classList.remove('open'), 700);
+}
+
+wrap.addEventListener('click', openLetter);
+wrap.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') openLetter();
+});
+backBtn.addEventListener('click', resetLetter);
+
+// Floating soft particles
+for (let i = 0; i < 14; i++) {
+  const p = document.createElement('span');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.animationDuration = (8 + Math.random() * 8) + 's';
+  p.style.animationDelay = (-Math.random() * 12) + 's';
+  p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+  scene.appendChild(p);
+}
+</script>
+</body>
+</html>
